@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City/Country Search</title>
+    <style>
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+    
+        #cityTableBody tr td {
+            padding: 5px;
+            border: 1px solid transparent; 
+        }
+    
+        #cityTableBody tr:hover td {
+            border: 1px solid black; 
+        }
+    
+        #cityTableBody tr.selected td {
+            background-color: lightgray; 
+        }
+    
+        #cityTableBody tr.selected td:first-child {
+            border-left: 3px solid black; 
+        }
+    
+        #cityTableBody tr.selected td:first-child {
+            border-top-left-radius: 5px;
+            border-bottom-left-radius: 5px;
+        }
+        #cityTableBody tr.selected td:last-child {
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+    
+        #cityTableBody tr:hover td:first-child {
+            border-top-left-radius: 5px;
+            border-bottom-left-radius: 5px;
+        }
+        #cityTableBody tr:hover td:last-child {
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+    </style>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        'use strict';
+      
+        let currentCityTimezone = 'America/New_York'; 
+
+        function getDateTime() {
+            let dateTime = new Date();
+            let options = { timeZone: currentCityTimezone, hour12: true };
+            let datetimeSpan = document.getElementById('datetimeSpan');
+            datetimeSpan.innerHTML = dateTime.toLocaleString('en-US', options);
+        }
+
+        function updateCityTable(html) {
+            let tableBody = document.getElementById('cityTableBody');
+            tableBody.innerHTML = html;
+        }
+
+        function setTimezone(city, timezone) {
+            currentCityTimezone = timezone; 
+            getDateTime(); 
+            let citySpan = document.getElementById('citySpan');
+            citySpan.innerHTML = city;
+        }
+
+        function getCityResults() {
+            let cityQuery = $('#cityInput').val().trim();
+            if (!cityQuery) {
+                updateCityTable('');
+                return;
+            }
+            fetch('/searchresults?city=' + encodeURIComponent(cityQuery))
+                .then(response => response.text())
+                .then(html => updateCityTable(html))
+                .catch(console.error);
+        }
+
+        function setup() {
+            setInterval(getDateTime, 1000);
+            $('#cityInput').on('input', getCityResults);
+        }
+
+        $(document).ready(setup);
+    </script>
+</head>
+<body>
+    <h1>City Search</h1>
+    <div>The current time in <span id="citySpan">New Haven</span> is <span id="datetimeSpan"></span>.</div>
+    <div>
+        <label for="cityInput">Search city name:</label>
+        <input type="text" id="cityInput" placeholder="Start typing a city or country name..."/>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>City</th>
+                <th>Country</th>
+            </tr>
+        </thead>
+        <tbody id="cityTableBody">
+        </tbody>
+    </table>
+</body>
+</html>
